@@ -2095,7 +2095,8 @@ void syzygy_extend_pv(const OptionsMap&         options,
             // Give a score of each move to break DTZ ties restricting opponent mobility,
             // but not giving the opponent a capture.
             for (const auto& mOpp : MoveList<LEGAL>(pos))
-                rm.tbRank -= pos.capture(mOpp) ? 100 : 1;
+                rm.tbRank -=
+                  pos.capture(mOpp) ? 50 + int(PieceValue[pos.piece_on(mOpp.to_sq())]) : 1;
             pos.undo_move(m);
         }
 
