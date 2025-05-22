@@ -1232,6 +1232,9 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 2006;
 
+        if (!capture && !PvNode && depth > 8 && moveCount > 4)
+            r += 512 + (moveCount - 4) * 128;
+
         if (capture)
             ss->statScore =
               826 * int(PieceValue[pos.captured_piece()]) / 128
