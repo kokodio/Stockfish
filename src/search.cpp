@@ -1053,7 +1053,7 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int  lmrDepth           = newDepth - r / 1024;
             bool positionStagnating = false;
-            if (!ss->inCheck && depth >= 4 && ss->ply >= 4)
+            if (!ss->inCheck && depth >= 4)
             {
                 Value evalSpread =
                   std::max(std::max(ss->staticEval, (ss - 2)->staticEval), (ss - 4)->staticEval)
@@ -1121,9 +1121,7 @@ moves_loop:  // When in check, search starts here
                 if (positionStagnating)
                 {
                     futilityValue -= 50;
-
-                    if (!capture && !givesCheck && (ss + 1)->quietMoveStreak >= 3)
-                        lmrDepth = std::max(0, lmrDepth - 1);
+                    lmrDepth = std::max(0, lmrDepth - 1);
                 }
 
                 // Futility pruning: parent node
