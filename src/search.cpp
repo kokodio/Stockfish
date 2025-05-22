@@ -1266,9 +1266,19 @@ moves_loop:  // When in check, search starts here
             // doesn't scale well to longer TCs
             if (value > alpha && d < newDepth)
             {
+                int deeperSearchThreshold = 42 + 2 * newDepth;
+
+                if (PvNode) deeperSearchThreshold -= 12;
+                if (improving) deeperSearchThreshold -= 8;
+                if (ss->ttPv) deeperSearchThreshold -= 10;
+                if (moveCount <= 2) deeperSearchThreshold -= 8;
+                if (!cutNode) deeperSearchThreshold -= 5;
+
+                if (cutNode && !PvNode) deeperSearchThreshold += 8;
+
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth);
+                const bool doDeeperSearch = value > (bestValue + deeperSearchThreshold);
                 const bool doShallowerSearch = value < bestValue + 9;
 
                 newDepth += doDeeperSearch - doShallowerSearch;
