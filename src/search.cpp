@@ -1257,6 +1257,13 @@ moves_loop:  // When in check, search starts here
                                            newDepth + !allNode + (PvNode && !bestMove)))
                     + ((ss - 1)->isPvNode);
 
+            if (ss->ttHit && move != ttData.move && !capture && !givesCheck
+                && ttData.move != Move::none() && ttData.depth >= depth - 2
+                && ttData.value > ss->staticEval + (PawnValue / 3))
+            {
+                d = std::max(1, d - 1);
+            }
+
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
