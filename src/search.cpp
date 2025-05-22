@@ -1051,7 +1051,17 @@ moves_loop:  // When in check, search starts here
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
-            int lmrDepth = newDepth - r / 1024;
+            int  lmrDepth           = newDepth - r / 1024;
+            bool positionStagnating = false;
+            if (!ss->inCheck && depth >= 4 && ss->ply >= 4)
+            {
+                Value evalSpread =
+                  std::max(std::max(ss->staticEval, (ss - 2)->staticEval), (ss - 4)->staticEval)
+                  - std::min(std::min(ss->staticEval, (ss - 2)->staticEval), (ss - 4)->staticEval);
+
+                positionStagnating =
+                  (evalSpread <= 25) && (ss->quietMoveStreak >= 2) && (moveCount <= 2);
+            }
 
             if (capture || givesCheck)
             {
@@ -1064,6 +1074,10 @@ moves_loop:  // When in check, search starts here
                 {
                     Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
                                         + PieceValue[capturedPiece] + 131 * captHist / 1024;
+
+                    if (positionStagnating)
+                        futilityValue -= 40;
+
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1103,6 +1117,14 @@ moves_loop:  // When in check, search starts here
 
                 Value futilityValue = ss->staticEval + (bestMove ? 46 : 138) + 117 * lmrDepth
                                     + 102 * (ss->staticEval > alpha);
+
+                if (positionStagnating)
+                {
+                    futilityValue -= 50;
+
+                    if (!capture && !givesCheck && (ss + 1)->quietMoveStreak >= 3)
+                        lmrDepth = std::max(0, lmrDepth - 1);
+                }
 
                 // Futility pruning: parent node
                 // (*Scaler): Generally, more frequent futility pruning
