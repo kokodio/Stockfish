@@ -50,13 +50,6 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int xx1=250, xx2=250, xx3=6, xx4=4, xx5=6, xx6=0;
-TUNE(SetRange(1, 400), xx1);
-TUNE(SetRange(1, 400), xx2);
-TUNE(SetRange(2, 20), xx3);
-TUNE(SetRange(2, 8), xx4);
-TUNE(SetRange(2, 20), xx5);
-TUNE(SetRange(0, 1), xx6);
 
 namespace TB = Tablebases;
 
@@ -1060,12 +1053,13 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
 
-            if (!capture && !givesCheck){
-                bool quietChainPruning = (ss->quietMoveStreak >= xx4
-                    && depth <= xx3 && ((!improving) | xx6)
-                    && ss->staticEval + xx1 + xx2 * lmrDepth < alpha);
+            if (!capture && !givesCheck)
+            {
+                bool quietChainPruning =
+                  (ss->quietMoveStreak >= 3 && depth <= 11 && !improving
+                   && ss->staticEval + 85 + 51 * lmrDepth < alpha);
 
-                if (quietChainPruning && moveCount >= xx5)
+                if (quietChainPruning && moveCount >= 13)
                     continue;
             }
 
