@@ -50,6 +50,14 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int xx0 = 8, xx1 = 8, xx2 = 8, xx3 = 8, xx4 = 8, xx5 = 8, xx6 = 8;
+TUNE(SetRange(0, 20), xx0);
+TUNE(SetRange(0, 20), xx1);
+TUNE(SetRange(0, 20), xx2);
+TUNE(SetRange(0, 20), xx3);
+TUNE(SetRange(0, 20), xx4);
+TUNE(SetRange(0, 20), xx5);
+TUNE(SetRange(0, 20), xx6);
 
 namespace TB = Tablebases;
 
@@ -1266,19 +1274,25 @@ moves_loop:  // When in check, search starts here
             // doesn't scale well to longer TCs
             if (value > alpha && d < newDepth)
             {
-                int deeperSearchThreshold = 42 + 2 * newDepth;
+                int deeperSearchThreshold = xx0 + 2 * newDepth;
 
-                if (PvNode) deeperSearchThreshold -= 12;
-                if (improving) deeperSearchThreshold -= 8;
-                if (ss->ttPv) deeperSearchThreshold -= 10;
-                if (moveCount <= 2) deeperSearchThreshold -= 8;
-                if (!cutNode) deeperSearchThreshold -= 5;
+                if (PvNode)
+                    deeperSearchThreshold -= xx1;
+                if (improving)
+                    deeperSearchThreshold -= xx2;
+                if (ss->ttPv)
+                    deeperSearchThreshold -= xx3;
+                if (moveCount <= 2)
+                    deeperSearchThreshold -= xx4;
+                if (!cutNode)
+                    deeperSearchThreshold -= xx5;
 
-                if (cutNode && !PvNode) deeperSearchThreshold += 8;
+                if (cutNode && !PvNode)
+                    deeperSearchThreshold += xx6;
 
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch = value > (bestValue + deeperSearchThreshold);
+                const bool doDeeperSearch    = value > (bestValue + deeperSearchThreshold);
                 const bool doShallowerSearch = value < bestValue + 9;
 
                 newDepth += doDeeperSearch - doShallowerSearch;
