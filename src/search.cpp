@@ -1266,17 +1266,18 @@ moves_loop:  // When in check, search starts here
             // doesn't scale well to longer TCs
             if (value > alpha && d < newDepth)
             {
-                // Adjust full-depth search based on LMR results - if the result was
-                // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth);
-                const bool doShallowerSearch = value < bestValue + 9;
+                Value margin = bestValue + 42 + 2 * newDepth;
 
-                newDepth += doDeeperSearch - doShallowerSearch;
+                if (value > margin + 75)
+                    newDepth += 2;
+                else if (value > margin)
+                    newDepth++;
+                else if (value < bestValue + 9)
+                    newDepth--;
 
                 if (newDepth > d)
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
-                // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1508);
             }
             else if (value > alpha && value < bestValue + 9)
