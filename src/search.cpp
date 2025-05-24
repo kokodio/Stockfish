@@ -1268,7 +1268,9 @@ moves_loop:  // When in check, search starts here
             {
                 Value margin = bestValue + 42 + 2 * newDepth;
 
-                if (value > margin)
+                if (value > margin + 75)
+                    newDepth += 2;
+                else if (value > margin)
                     newDepth++;
                 else if (value < bestValue + 9)
                     newDepth--;
