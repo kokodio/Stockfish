@@ -1269,11 +1269,11 @@ moves_loop:  // When in check, search starts here
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 Value margin = bestValue + 42 + 2 * newDepth;
-                newDepth += std::clamp((value - margin) / 30, -2, 3);
 
                 if (newDepth > d)
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
+                newDepth += std::clamp((value - margin) / 30, -2, 3);
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1508);
             }
