@@ -1322,14 +1322,12 @@ moves_loop:  // When in check, search starts here
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
-        if (moveCount == 1 || value > alpha){
+            
+        if (value > alpha)
             ss->quietFailures = 0;
-        }
-        else{
-            if (!capture && !givesCheck) {
-                ss->quietFailures++;
-            }
-        }
+        else if (!capture && !givesCheck)
+            ss->quietFailures++;
+
         if (rootNode)
         {
             RootMove& rm =
