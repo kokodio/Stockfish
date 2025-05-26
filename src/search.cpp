@@ -1181,8 +1181,11 @@ moves_loop:  // When in check, search starts here
             // over current beta
             else if (cutNode)
                 extension = -2;
-        }
 
+            else if ((ss + 1)->cutoffCnt > 3)
+                extension = -1;
+        }
+        
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck);
 
