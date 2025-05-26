@@ -1224,6 +1224,9 @@ moves_loop:  // When in check, search starts here
         if (!capture && !givesCheck && ss->quietMoveStreak >= 2)
             r += (ss->quietMoveStreak - 1) * 50;
 
+        if (!capture && !givesCheck && ss->quietFailures >= 2) {
+            r += (ss->quietFailures - 1) * 50;
+        }
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
             r -= 2006;
@@ -1241,10 +1244,6 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
-        if (!capture && !givesCheck && ss->quietFailures >= 2) {
-            r += ss->quietFailures * 100;
-        }
-
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1253,6 +1252,7 @@ moves_loop:  // When in check, search starts here
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
+            
             Depth d = std::max(1, std::min(newDepth - r / 1024,
                                            newDepth + !allNode + (PvNode && !bestMove)))
                     + (ss - 1)->isPvNode;
