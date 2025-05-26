@@ -615,6 +615,7 @@ Value Search::Worker::search(
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     ss->moveCount      = 0;
+    ss->quietFailures = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
 
@@ -1240,6 +1241,10 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
+        if (!capture && !givesCheck && ss->quietFailures >= 2) {
+            r += ss->quietFailures * 100;
+        }
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1317,7 +1322,14 @@ moves_loop:  // When in check, search starts here
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
-
+        if (moveCount == 1 || value > alpha){
+            ss->quietFailures = 0;
+        }
+        else{
+            if (!capture && !givesCheck) {
+                ss->quietFailures++;
+            }
+        }
         if (rootNode)
         {
             RootMove& rm =

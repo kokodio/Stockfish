@@ -76,6 +76,7 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     bool                        isPvNode;
+    int                         quietFailures;
     int                         quietMoveStreak;
 };
 
