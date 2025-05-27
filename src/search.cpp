@@ -1181,9 +1181,9 @@ moves_loop:  // When in check, search starts here
             // over current beta
             else if (cutNode)
                 extension = -2;
-            
-            else if ((ss+1)->ttHit) 
-                extension = -1;
+
+            else if ((ss + 1)->ttHit)
+                extension = -2;
         }
 
         // Step 16. Make the move
@@ -1210,7 +1210,7 @@ moves_loop:  // When in check, search starts here
         r += 316;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 28047;
-        
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 2864 + 966 * !ttData.move;
