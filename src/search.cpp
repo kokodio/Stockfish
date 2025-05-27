@@ -542,6 +542,7 @@ void Search::Worker::clear() {
     pawnCorrectionHistory.fill(5);
     minorPieceCorrectionHistory.fill(0);
     nonPawnCorrectionHistory.fill(0);
+    pieceReductionBonus = {0, 80, 120, 120, 100, -50, 150};
 
     ttMoveHistory = 0;
 
@@ -1031,6 +1032,7 @@ moves_loop:  // When in check, search starts here
         int delta = beta - alpha;
 
         Depth r = reduction(improving, depth, moveCount, delta);
+        r += pieceReductionBonus[movedPiece];
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Smaller or even negative value is better for short time controls
