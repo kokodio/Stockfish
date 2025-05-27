@@ -1110,6 +1110,13 @@ moves_loop:  // When in check, search starts here
                     continue;
                 }
 
+                if (!ss->inCheck && !capture && !givesCheck && depth < 8
+                    && moveCount > (bestMove ? 6 : 4) && !improving
+                    && ss->staticEval + (ss->inCheck ? 100 : 300) < alpha)
+                {
+                    continue;
+                }
+
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
