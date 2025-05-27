@@ -1110,6 +1110,10 @@ moves_loop:  // When in check, search starts here
                     continue;
                 }
 
+                if (!PvNode && type_of(movedPiece) == KING && depth >= 8
+                    && pos.count<ALL_PIECES>() > 22 && move != ttData.move)
+                    continue;
+
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE
