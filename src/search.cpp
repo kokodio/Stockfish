@@ -1110,8 +1110,8 @@ moves_loop:  // When in check, search starts here
                     continue;
                 }
 
-                if (!PvNode && type_of(movedPiece) == KING && depth >= 4
-                    && pos.count<ALL_PIECES>() > 22 && move != ttData.move)
+                if (!PvNode && type_of(movedPiece) == KING && move.type_of() != CASTLING && depth >= 8
+                    && pos.count<ALL_PIECES>() > 26 && move != ttData.move)
                     continue;
 
                 lmrDepth = std::max(lmrDepth, 0);
