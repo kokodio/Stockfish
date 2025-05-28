@@ -601,7 +601,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, priorCapture, opponentWorsening, recapture;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -1022,6 +1022,7 @@ moves_loop:  // When in check, search starts here
         capture    = pos.capture_stage(move);
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
+        recapture =  move.to_sq() == ((ss - 1)->currentMove).to_sq();
 
         (ss + 1)->quietMoveStreak = (!capture && !givesCheck) ? (ss->quietMoveStreak + 1) : 0;
 
@@ -1059,7 +1060,7 @@ moves_loop:  // When in check, search starts here
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
-                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
+                                        + PieceValue[capturedPiece] + 131 * captHist / 1024 + recapture * 256;
                     if (futilityValue <= alpha)
                         continue;
                 }
