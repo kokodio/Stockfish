@@ -1237,6 +1237,10 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()] + 1000 * ss->inCheck - 3206;
 
+
+        if (capture && move.to_sq() == ((ss - 1)->currentMove).to_sq() && !givesCheck)
+            r -= 1024;
+
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
