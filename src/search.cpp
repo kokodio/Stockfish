@@ -1239,7 +1239,7 @@ moves_loop:  // When in check, search starts here
 
 
         if (capture && move.to_sq() == ((ss - 1)->currentMove).to_sq() && !givesCheck)
-            r -= 1024;
+            r += 1024;
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
