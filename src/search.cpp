@@ -1226,6 +1226,9 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
             r -= 2006;
+        else
+            r += std::max(0, int(thisThread->ttMoveHistory)) / 20;
+            
 
         if (capture)
             ss->statScore =
