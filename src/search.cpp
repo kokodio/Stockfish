@@ -1095,7 +1095,7 @@ moves_loop:  // When in check, search starts here
 
                 lmrDepth += history / 3388;
 
-                lmrDepth += (ss + 2)->cutoffCnt > 4 ? 1 : 0;
+                lmrDepth += (ss + 2)->cutoffCnt > 4 ? -1 : 0;
 
                 Value baseFutility = (bestMove ? 46 : 138 + std::abs(history / 300));
                 Value futilityValue =
