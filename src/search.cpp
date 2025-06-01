@@ -1068,7 +1068,7 @@ moves_loop:  // When in check, search starts here
                 int seeHist = std::clamp(captHist / 31, -137 * depth, 125 * depth);
                 
                 if (move.to_sq() == (ss - 1)->currentMove.to_sq() && priorCapture)
-                    seeHist += 25 * depth;
+                    seeHist -= 25 * depth;
                     
                 if (!pos.see_ge(move, -158 * depth - seeHist))
                 {
