@@ -1037,6 +1037,10 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
 
+            if (moveCount > 2 && !capture && !givesCheck
+                && pos.blockers_for_king(us) & move.from_sq() && lmrDepth < 5)
+                continue;
+
             if (capture || givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
