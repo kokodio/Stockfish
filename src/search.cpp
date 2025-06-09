@@ -1125,6 +1125,12 @@ moves_loop:  // When in check, search starts here
             Value singularBeta  = ttData.value - (58 + 76 * (ss->ttPv && !PvNode)) * depth / 57;
             Depth singularDepth = newDepth / 2;
 
+            int historyBonus = thisThread->mainHistory[us][ttData.move.from_to()] / 256
+                             + (*contHist[0])[movedPiece][ttData.move.to_sq()] / 512
+                             + (*contHist[1])[movedPiece][ttData.move.to_sq()] / 512;
+
+            singularBeta += std::clamp(historyBonus / 16, -depth * 4, depth * 8);
+
             ss->excludedMove = move;
             value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
             ss->excludedMove = Move::none();
