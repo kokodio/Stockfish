@@ -903,11 +903,6 @@ Value Search::Worker::search(
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
     probCutBeta = beta + 201 - 58 * improving;
-    if (ttData.move && ttMoveHistory > 0)
-        probCutBeta += std::min(ttMoveHistory / 64, 100);
-
-    else if (ttData.move && ttMoveHistory < 0)
-        probCutBeta -= std::min(-ttMoveHistory / 64, 100);
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
