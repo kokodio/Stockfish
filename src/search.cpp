@@ -655,6 +655,7 @@ Value Search::Worker::search(
     ss->statScore       = 0;
     ss->isPvNode        = PvNode;
     (ss + 2)->cutoffCnt = 0;
+    ss->lmrMissCount    = 0;
 
     // Step 4. Transposition table lookup
     excludedMove                   = ss->excludedMove;
@@ -1226,18 +1227,17 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
+        r -= ss->lmrMissCount * 256;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
-            int lmrAdjustment = std::min(ss->lmrMissCount / 3, depth / 4);
-
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            Depth d = std::max(1, std::min(newDepth - r / 1024 - lmrAdjustment,
+            Depth d = std::max(1, std::min(newDepth - r / 1024,
                                            newDepth + !allNode + (PvNode && !bestMove)))
                     + (ss - 1)->isPvNode;
 
@@ -1250,12 +1250,11 @@ moves_loop:  // When in check, search starts here
             // doesn't scale well to longer TCs
             if (value > alpha && d < newDepth)
             {
-                ss->lmrMissCount++;
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth);
                 const bool doShallowerSearch = value < bestValue + 9;
-
+                ss->lmrMissCount++;
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
@@ -1263,10 +1262,6 @@ moves_loop:  // When in check, search starts here
 
                 // Post LMR continuation history updates
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1508);
-            }
-            else if (value <= alpha)
-            {
-                ss->lmrMissCount = std::max(0, ss->lmrMissCount - 1);
             }
             else if (value > alpha && value < bestValue + 9)
                 newDepth--;
