@@ -142,6 +142,26 @@ void update_correction_history(const Position& pos,
     }
 }
 
+int null_move_value(const Worker& w, const Position& pos, const Stack* const ss) {
+    const Color us = pos.side_to_move();
+    const Move  m  = (ss - 1)->currentMove;
+    const int   pv = w.nullMoveHistory[pos.pawn_key() & (NMP_HISTORY_SIZE - 1)][us];
+    const int   mv = w.nullMovePieceToHistory[us][pos.piece_on(m.to_sq())][m.to_sq()];
+
+    return (pv + mv) / 2;
+}
+
+void update_null_move_history(const Position& pos,
+                              Stack* const    ss,
+                              Search::Worker& workerThread,
+                              const int       bonus) {
+    const Color us = pos.side_to_move();
+    const Move  m  = (ss - 1)->currentMove;
+
+    workerThread.nullMoveHistory[pos.pawn_key() & (NMP_HISTORY_SIZE - 1)][us] << bonus;
+    workerThread.nullMovePieceToHistory[us][pos.piece_on(m.to_sq())][m.to_sq()] << bonus;
+}
+
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(usize nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
 Value value_to_tt(Value v, int ply);
@@ -728,6 +748,9 @@ void Search::Worker::clear() {
 
     ttMoveHistory = 0;
 
+    nullMoveHistory.fill(0);
+    nullMovePieceToHistory.fill(0);
+
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
             h.fill(5);
@@ -1034,9 +1057,11 @@ Value Search::Worker::search(
     }
 
     // Step 10. Null move search with verification search
-    if (cutNode
-        && ss->staticEval + 50 * ss->priorNMPFailHigh >= beta - 13 * depth - 47 * improving + 365
-        && !excludedMove && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && beta >= -2000)
+    if (cutNode && !excludedMove && pos.non_pawn_material(us) && ss->ply >= nmpMinPly
+        && beta >= -2000
+        && ss->staticEval + 50 * ss->priorNMPFailHigh
+               + std::max(null_move_value(*this, pos, ss) - 200, 0) * 300 / 824
+             >= beta - 13 * depth - 47 * improving + 365)
     {
         assert((ss - 1)->currentMove != Move::null());
 
@@ -1049,6 +1074,9 @@ Value Search::Worker::search(
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
 
         undo_null_move(pos);
+
+        if (!threads.stop)
+            update_null_move_history(pos, ss, *this, nullValue >= beta ? 128 : -128);
 
         // Do not return unproven mate or TB scores
         if (nullValue >= beta && !is_win(nullValue))

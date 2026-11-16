@@ -40,6 +40,7 @@ constexpr int UINT_16_HISTORY_SIZE     = std::numeric_limits<u16>::max() + 1;
 constexpr int CORRHIST_BASE_SIZE       = UINT_16_HISTORY_SIZE;
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 constexpr int LOW_PLY_HISTORY_SIZE     = 5;
+constexpr int NMP_HISTORY_SIZE         = 16384;
 
 static_assert((PAWN_HISTORY_BASE_SIZE & (PAWN_HISTORY_BASE_SIZE - 1)) == 0,
               "PAWN_HISTORY_BASE_SIZE has to be a power of 2");
@@ -193,6 +194,10 @@ template<CorrHistType T>
 using CorrectionHistory = typename Detail::CorrHistTypedef<T>::type;
 
 using TTMoveHistory = StatsEntry<i16, 8192>;
+
+using NullMoveHistory = Stats<i16, 1024, NMP_HISTORY_SIZE, COLOR_NB>;
+
+using NullMovePieceToHistory = Stats<i16, 1024, COLOR_NB, PIECE_NB, SQUARE_NB>;
 
 struct ContinuationHistoryBlock {
     ContinuationHistory table[2][2];
