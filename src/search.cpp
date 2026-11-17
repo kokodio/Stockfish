@@ -769,7 +769,7 @@ Value Search::Worker::search(
     StateInfo st;
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    Move  move, excludedMove, bestMove, nullThreat;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -823,6 +823,7 @@ Value Search::Worker::search(
 
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
+    nullThreat     = Move::none();
     priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction        = 0;
     ss->statScore              = 0;
@@ -1048,6 +1049,14 @@ Value Search::Worker::search(
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
 
+        if (nullValue < beta)
+        {
+            const auto [nullHit, nullData, nullWriter] = tt.probe(pos.key());
+
+            if (nullHit && nullData.move && pos.capture(nullData.move))
+                nullThreat = nullData.move;
+        }
+
         undo_null_move(pos);
 
         // Do not return unproven mate or TB scores
@@ -1186,6 +1195,9 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for PvNodes
         if (PvNode)
             r -= 512;
+
+        if (nullThreat && move.from_sq() == nullThreat.to_sq())
+            r -= 1024;
 
         // Increase reduction for ttPv nodes
         // (*Scaler) Larger values scale well.
